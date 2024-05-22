@@ -4,6 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/v2rayA/v2rayA/conf"
 	"github.com/v2rayA/v2rayA/core/serverObj"
@@ -11,14 +21,6 @@ import (
 	"github.com/v2rayA/v2rayA/core/v2ray/where"
 	"github.com/v2rayA/v2rayA/db/configure"
 	"github.com/v2rayA/v2rayA/pkg/util/log"
-	"net"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 var NoConnectedServerErr = fmt.Errorf("no selected servers")
@@ -234,7 +236,18 @@ func StartCoreProcess(ctx context.Context) (*os.Process, error) {
 		"--config=" + asset.GetV2rayConfigPath(),
 	}
 	if confdir := asset.GetV2rayConfigDirPath(); confdir != "" {
-		arguments = append(arguments, "--confdir="+confdir)
+		files, err := os.ReadDir(confdir)
+		if err == nil {
+			sort.SliceStable(files, func(i, j int) bool { return files[i].Name() < files[j].Name() })
+
+			for _, file := range files {
+				fi, err := file.Info()
+				if err != nil || fi.IsDir() {
+					continue
+				}
+				arguments = append(arguments, "--config="+filepath.Join(confdir, file.Name()))
+			}
+		}
 	}
 	log.Debug(strings.Join(arguments, " "))
 	assetDir := asset.GetV2rayLocationAssetOverride()

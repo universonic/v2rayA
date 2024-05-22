@@ -980,7 +980,7 @@ func (t *Template) setInboundFakeDnsDestOverride() {
 		return
 	}
 	for i := range t.Inbounds {
-		if t.Inbounds[i].Sniffing.Enabled == false {
+		if !t.Inbounds[i].Sniffing.Enabled {
 			continue
 		}
 		t.Inbounds[i].Sniffing.DestOverride = []string{"fakedns"}
