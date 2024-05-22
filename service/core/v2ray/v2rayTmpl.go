@@ -307,6 +307,7 @@ func (t *Template) setDNS(outbounds []serverInfo, supportUDP map[string]bool) (r
 	if allThroughProxy {
 		// guess the user want to protect the privacy
 		t.DNS.DisableFallback = &True
+		t.DNS.FallbackStrategy = "Disabled"
 	}
 	if t.Setting.AntiPollution != configure.AntipollutionClosed {
 		if len(external) == 0 {
@@ -342,18 +343,22 @@ func (t *Template) setDNS(outbounds []serverInfo, supportUDP map[string]bool) (r
 	var domainsToLookup []string
 	for _, v := range outbounds {
 		if net.ParseIP(v.Info.GetHostname()) == nil {
-			domainsToLookup = append(domainsToLookup, v.Info.GetHostname())
+			domain := v.Info.GetHostname()
+			if domain != "localhost" {
+				domainsToLookup = append(domainsToLookup, domain)
+			}
 		}
 	}
 	for _, r := range routing {
-		if len(r.Domain) > 0 {
-			domainsToLookup = append(domainsToLookup, r.Domain...)
+		for _, domain := range r.Domain {
+			if domain != "localhost" {
+				domainsToLookup = append(domainsToLookup, domain)
+			}
 		}
 	}
 	domainsToLookup = common.Deduplicate(domainsToLookup)
 	if len(domainsToLookup) > 0 {
-		var dnsList []string
-		dnsList = []string{
+		dnsList := []string{
 			"tcp://208.67.220.220:5353 -> direct",
 			"tcp://119.29.29.29:53 -> direct",
 		}
@@ -466,7 +471,6 @@ func (t *Template) setDNSRouting(routing []coreObj.RoutingRule, supportUDP map[s
 				})
 		}
 	}
-	return
 }
 
 func (t *Template) AppendRoutingRuleByMode(mode configure.RulePortMode, inbounds []string) (err error) {
@@ -1850,7 +1854,7 @@ func (t *Template) InsertMappingOutbound(o serverObj.ServerObj, inboundPort stri
 		Tag: "inbound" + inboundPort,
 	})
 	if t.Routing.DomainStrategy == "" {
-		t.Routing.DomainStrategy = "IPOnDemand"
+		t.Routing.DomainStrategy = "IPIfNonMatch"
 	}
 	//插入最前
 	tmp := make([]coreObj.RoutingRule, 1, len(t.Routing.Rules)+1)

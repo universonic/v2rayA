@@ -85,7 +85,7 @@ const TemplateJson = `
     ],
     "outbounds": [],
     "routing": {
-        "domainStrategy": "IPOnDemand",
+        "domainStrategy": "IPIfNonMatch",
         "rules": []
     }
 }`

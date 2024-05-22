@@ -248,12 +248,13 @@ type HttpSettings struct {
 type Hosts map[string][]string
 
 type DNS struct {
-	Hosts           Hosts         `json:"hosts,omitempty"`
-	Servers         []interface{} `json:"servers"`
-	ClientIp        string        `json:"clientIp,omitempty"`
-	Tag             string        `json:"tag,omitempty"`
-	DisableFallback *bool         `json:"disableFallback,omitempty"`
-	QueryStrategy   string        `json:"queryStrategy,omitempty"`
+	Hosts            Hosts         `json:"hosts,omitempty"`
+	Servers          []interface{} `json:"servers"`
+	ClientIp         string        `json:"clientIp,omitempty"`
+	Tag              string        `json:"tag,omitempty"`
+	FallbackStrategy string        `json:"fallbackStrategy,omitempty"`
+	DisableFallback  *bool         `json:"disableFallback,omitempty"`
+	QueryStrategy    string        `json:"queryStrategy,omitempty"`
 }
 type DnsServer struct {
 	Address      string   `json:"address"`
